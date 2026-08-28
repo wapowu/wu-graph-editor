@@ -5101,6 +5101,264 @@ async function createWasm() {
   		Module.WebPlayer.PlayerIsInitialized();
   	}
 
+  var _WuOpenGraphFile = function(gameObjectNamePtr) {
+  
+          const gameObjectName =
+              UTF8ToString(gameObjectNamePtr);
+  
+          (async () => {
+  
+              try {
+  
+                  if (!window.showOpenFilePicker) {
+  
+                      alert(
+                          "Direct file access is not supported by this browser. Use Chrome or Edge."
+                      );
+  
+                      return;
+                  }
+  
+                  const handles =
+                      await window.showOpenFilePicker({
+                          multiple: false,
+  
+                          types: [
+                              {
+                                  description:
+                                      "Wu Flow Graph",
+  
+                                  accept: {
+                                      "application/json":
+                                          [".json"]
+                                  }
+                              }
+                          ]
+                      });
+  
+                  if (
+                      !handles ||
+                      handles.length === 0
+                  )
+                  {
+                      return;
+                  }
+  
+                  window.wuFlowFileHandle =
+                      handles[0];
+  
+                  const file =
+                      await window
+                          .wuFlowFileHandle
+                          .getFile();
+  
+                  const json =
+                      await file.text();
+  
+                  SendMessage(
+                      gameObjectName,
+                      "OnWebGraphOpened",
+                      json
+                  );
+  
+              }
+              catch (error) {
+  
+                  if (
+                      error.name !==
+                      "AbortError"
+                  )
+                  {
+                      console.error(
+                          "Wu Flow Open failed:",
+                          error
+                      );
+                  }
+              }
+  
+          })();
+      };
+
+  var _WuSaveGraph = function(
+          jsonPtr,
+          gameObjectNamePtr
+      ) {
+  
+          const json =
+              UTF8ToString(
+                  jsonPtr
+              );
+  
+          const gameObjectName =
+              UTF8ToString(
+                  gameObjectNamePtr
+              );
+  
+          (async () => {
+  
+              try {
+  
+                  if (
+                      !window.wuFlowFileHandle
+                  )
+                  {
+                      if (
+                          !window.showSaveFilePicker
+                      )
+                      {
+                          alert(
+                              "Direct file saving is not supported by this browser."
+                          );
+  
+                          return;
+                      }
+  
+                      window.wuFlowFileHandle =
+                          await window
+                              .showSaveFilePicker({
+  
+                                  suggestedName:
+                                      "BarNight.json",
+  
+                                  types: [
+                                      {
+                                          description:
+                                              "Wu Flow Graph",
+  
+                                          accept: {
+                                              "application/json":
+                                                  [".json"]
+                                          }
+                                      }
+                                  ]
+                              });
+                  }
+  
+                  const writable =
+                      await window
+                          .wuFlowFileHandle
+                          .createWritable();
+  
+                  await writable.write(
+                      json
+                  );
+  
+                  await writable.close();
+  
+                  SendMessage(
+                      gameObjectName,
+                      "OnWebFileSaved",
+                      window
+                          .wuFlowFileHandle
+                          .name
+                  );
+  
+              }
+              catch (error) {
+  
+                  if (
+                      error.name !==
+                      "AbortError"
+                  )
+                  {
+                      console.error(
+                          "Wu Flow Save failed:",
+                          error
+                      );
+                  }
+              }
+  
+          })();
+      };
+
+  var _WuSaveGraphAs = function(
+          jsonPtr,
+          suggestedNamePtr,
+          gameObjectNamePtr
+      ) {
+  
+          const json =
+              UTF8ToString(jsonPtr);
+  
+          const suggestedName =
+              UTF8ToString(
+                  suggestedNamePtr
+              );
+  
+          const gameObjectName =
+              UTF8ToString(
+                  gameObjectNamePtr
+              );
+  
+          (async () => {
+  
+              try {
+  
+                  if (!window.showSaveFilePicker) {
+  
+                      alert(
+                          "Direct file saving is not supported by this browser. Use Chrome or Edge."
+                      );
+  
+                      return;
+                  }
+  
+                  window.wuFlowFileHandle =
+                      await window.showSaveFilePicker({
+  
+                          suggestedName:
+                              suggestedName,
+  
+                          types: [
+                              {
+                                  description:
+                                      "Wu Flow Graph",
+  
+                                  accept: {
+                                      "application/json":
+                                          [".json"]
+                                  }
+                              }
+                          ]
+                      });
+  
+                  const writable =
+                      await window
+                          .wuFlowFileHandle
+                          .createWritable();
+  
+                  await writable.write(
+                      json
+                  );
+  
+                  await writable.close();
+  
+                  SendMessage(
+                      gameObjectName,
+                      "OnWebFileSaved",
+                      window
+                          .wuFlowFileHandle
+                          .name
+                  );
+  
+              }
+              catch (error) {
+  
+                  if (
+                      error.name !==
+                      "AbortError"
+                  )
+                  {
+                      console.error(
+                          "Wu Flow Save As failed:",
+                          error
+                      );
+                  }
+              }
+  
+          })();
+      };
+
   var ___assert_fail = (condition, filename, line, func) =>
       abort(`Assertion failed: ${UTF8ToString(condition)}, at: ` + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
 
@@ -17062,6 +17320,12 @@ var wasmImports = {
   JS_WebGPU_Setup: _JS_WebGPU_Setup,
   /** @export */
   JS_WebPlayer_FinishInitialization: _JS_WebPlayer_FinishInitialization,
+  /** @export */
+  WuOpenGraphFile: _WuOpenGraphFile,
+  /** @export */
+  WuSaveGraph: _WuSaveGraph,
+  /** @export */
+  WuSaveGraphAs: _WuSaveGraphAs,
   /** @export */
   __assert_fail: ___assert_fail,
   /** @export */
